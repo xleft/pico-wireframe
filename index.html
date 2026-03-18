@@ -828,11 +828,13 @@ function createElement(config) {
 
   // 绑定事件
   el.addEventListener('mousedown', onElementMouseDown);
-
-  // 双击编辑文字
-  label.addEventListener('dblclick', (e) => {
+  // 双击编辑文字（注意：label 有 pointer-events:none，需在 el 上监听 dblclick）
+  el.addEventListener('dblclick', (e) => {
     e.stopPropagation();
+    // 如果点击的是 resize handle，不进入编辑
+    if (e.target.classList.contains('resize-handle')) return;
     label.setAttribute('contenteditable', 'true');
+    label.style.pointerEvents = 'auto';
     label.classList.add('editable-active');
     label.focus();
     // 选中所有文字
@@ -842,15 +844,19 @@ function createElement(config) {
     sel.removeAllRanges();
     sel.addRange(range);
   });
-
   label.addEventListener('blur', () => {
     label.setAttribute('contenteditable', 'false');
+    label.style.pointerEvents = '';
     label.classList.remove('editable-active');
     saveHistory();
   });
-
   label.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      label.blur();
+    }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      // 单回车确认编辑（Shift+Enter 换行）
+      e.preventDefault();
       label.blur();
     }
     e.stopPropagation();
@@ -885,6 +891,23 @@ function onElementMouseDown(e) {
 
   // 如果标签正在编辑，不触发拖拽
   if (label && label.getAttribute('contenteditable') === 'true') return;
+
+  // 双击（e.detail >= 2）：直接进入文字编辑模式，不启动拖拽
+  if (e.detail >= 2) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.target.classList.contains('resize-handle')) return;
+    label.setAttribute('contenteditable', 'true');
+    label.style.pointerEvents = 'auto';
+    label.classList.add('editable-active');
+    label.focus();
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return;
+  }
 
   e.preventDefault();
   e.stopPropagation();
@@ -1151,8 +1174,15 @@ function ctxDelete() {
   showToast('已删除');
 }
 
-// Delete 键删除
+// 全局键盘快捷键
 document.addEventListener('keydown', (e) => {
+  // Ctrl+Z 撤销
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    e.preventDefault();
+    undoAction();
+    return;
+  }
+  // Delete/Backspace 删除元素
   if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEl) {
     const label = selectedEl.querySelector('.wf-label');
     if (label && label.getAttribute('contenteditable') === 'true') return;
