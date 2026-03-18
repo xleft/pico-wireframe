@@ -207,7 +207,7 @@ body {
   width: 375px;
   height: 812px;
   overflow: hidden;
-  background: #fff;
+  background: #f7f7f7;
 }
 
 /* ===== 线框元素 ===== */
@@ -235,14 +235,14 @@ body {
 }
 
 .wf-rect.style-header {
-  background: #f0f0f0;
-  border-color: #999;
+  background: #e0e0e0;
+  border-color: #888;
 }
 .wf-rect.style-card {
-  background: #fff;
-  border-color: #ddd;
+  background: #ffffff;
+  border-color: #c0c0c0;
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
 }
 .wf-rect.style-button {
   background: #e8e8e8;
@@ -273,8 +273,8 @@ body {
   border-radius: 0;
 }
 .wf-rect.style-nav {
-  background: #f8f8f8;
-  border-color: #e0e0e0;
+  background: #e8e8e8;
+  border-color: #bbb;
   border-radius: 0;
 }
 
@@ -768,8 +768,8 @@ function switchPage(pageId) {
   const navEl = document.getElementById('nav-' + pageId);
   if (navEl) navEl.classList.add('active');
 
-  // 恢复或初始化状态
-  if (pageStates[pageId]) {
+  // 恢复或初始化状态（注意：空数组 [] 是 truthy，需检查 length）
+  if (pageStates[pageId] && pageStates[pageId].length > 0) {
     deserializeCanvas(pageStates[pageId]);
   } else {
     renderWireframe(pageId);
@@ -1215,9 +1215,8 @@ function showToast(msg, duration = 2000) {
 }
 
 // ===== 初始化 =====
-document.addEventListener('DOMContentLoaded', () => {
-  switchPage('s1');
-});
+// 直接调用（script 在 body 末尾，DOM 已完全解析）
+switchPage('s1');
 </script>
 </body>
 </html>
