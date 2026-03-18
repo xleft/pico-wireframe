@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心动挑战 · 线框编辑器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  color: #fff;
+}
+
+/* ===== 侧边栏 ===== */
+#sidebar {
+  width: 180px;
+  min-width: 180px;
+  background: #12122a;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #2a2a4a;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 16px 12px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff6b9d;
+  border-bottom: 1px solid #2a2a4a;
+}
+.sidebar-logo span {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #666;
+  margin-top: 2px;
+}
+
+.sidebar-group {
+  padding: 8px 12px 4px;
+  font-size: 9px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nav-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.nav-item:hover { background: #1e1e3a; }
+.nav-item.active {
+  background: #1e1e3a;
+  border-left-color: #ff6b9d;
+}
+.nav-item .nav-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ddd;
+}
+.nav-item.active .nav-title { color: #ff6b9d; }
+.nav-item .nav-sub {
+  font-size: 10px;
+  color: #555;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.sidebar-notes {
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid #2a2a4a;
+}
+.sidebar-notes label {
+  font-size: 10px;
+  color: #555;
+  display: block;
+  margin-bottom: 4px;
+}
+.sidebar-notes textarea {
+  width: 100%;
+  height: 70px;
+  background: #1e1e3a;
+  border: 1px solid #2a2a4a;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 10px;
+  padding: 6px;
+  resize: none;
+  outline: none;
+}
+.sidebar-notes textarea:focus { border-color: #ff6b9d; }
+
+/* ===== 主区域 ===== */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== 顶部工具栏 ===== */
+#toolbar {
+  height: 44px;
+  background: #12122a;
+  border-bottom: 1px solid #2a2a4a;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.toolbar-label {
+  font-size: 10px;
+  color: #555;
+  margin-right: 4px;
+}
+
+.tool-btn {
+  padding: 5px 10px;
+  background: #1e1e3a;
+  border: 1px solid #2a2a4a;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tool-btn:hover { background: #2a2a4a; color: #fff; }
+.tool-btn.active { background: #ff6b9d22; border-color: #ff6b9d; color: #ff6b9d; }
+
+.toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: #2a2a4a;
+  margin: 0 4px;
+}
+
+.submit-btn {
+  margin-left: auto;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #ff6b9d, #c44dff);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.submit-btn:hover { opacity: 0.85; }
+
+/* ===== 画布区域 ===== */
+#canvas-area {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+/* ===== 手机框架 ===== */
+#phone-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#phone-frame {
+  width: 375px;
+  height: 812px;
+  background: #fff;
+  border-radius: 44px;
+  border: 8px solid #222;
+  box-shadow: 0 0 0 2px #444, 0 30px 80px rgba(0,0,0,0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #222;
+  border-radius: 0 0 18px 18px;
+  z-index: 100;
+}
+
+/* ===== 线框画布（在手机内部） ===== */
+#wireframe-canvas {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ===== 线框元素 ===== */
+.wf-element {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.wf-element.selected {
+  outline: 2px solid #ff6b9d !important;
+  outline-offset: 1px;
+}
+
+.wf-rect {
+  background: rgba(255,255,255,0.9);
+  border: 1.5px solid #aaa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  min-height: 20px;
+}
+
+.wf-rect.style-header {
+  background: #f0f0f0;
+  border-color: #999;
+}
+.wf-rect.style-card {
+  background: #fff;
+  border-color: #ddd;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.wf-rect.style-button {
+  background: #e8e8e8;
+  border-color: #bbb;
+  border-radius: 20px;
+}
+.wf-rect.style-button-primary {
+  background: #ffddee;
+  border-color: #ff6b9d;
+  border-radius: 20px;
+}
+.wf-rect.style-image {
+  background: #f0f0f0;
+  border: 2px dashed #bbb;
+  border-radius: 4px;
+}
+.wf-rect.style-divider {
+  background: transparent;
+  border: none;
+  border-top: 1px solid #ddd;
+  border-radius: 0;
+  height: 1px !important;
+  padding: 0;
+}
+.wf-rect.style-tab {
+  background: #f5f5f5;
+  border-color: #ddd;
+  border-radius: 0;
+}
+.wf-rect.style-nav {
+  background: #f8f8f8;
+  border-color: #e0e0e0;
+  border-radius: 0;
+}
+
+.wf-label {
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+  line-height: 1.4;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.wf-label.editable-active {
+  pointer-events: auto;
+  outline: none;
+  cursor: text;
+}
+
+/* 调整大小的手柄 */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #ff6b9d;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  z-index: 200;
+}
+.resize-handle.se { bottom: -4px; right: -4px; cursor: se-resize; }
+.resize-handle.s  { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.e  { right: -4px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
+/* ===== 全屏按钮 ===== */
+#fullscreen-btn {
+  position: absolute;
+  top: -8px;
+  right: -36px;
+  width: 28px;
+  height: 28px;
+  background: #1e1e3a;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #aaa;
+  transition: all 0.15s;
+}
+#fullscreen-btn:hover { background: #2a2a4a; color: #fff; }
+
+/* ===== 全屏模式 ===== */
+body.fullscreen #sidebar { display: none; }
+body.fullscreen #toolbar { display: none; }
+body.fullscreen #canvas-area { padding: 20px; background: #0a0a1a; }
+body.fullscreen #phone-frame { box-shadow: 0 0 0 2px #444, 0 40px 100px rgba(0,0,0,0.8); }
+
+#fullscreen-controls {
+  display: none;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  gap: 8px;
+  z-index: 1000;
+}
+body.fullscreen #fullscreen-controls { display: flex; }
+
+.fs-btn {
+  padding: 8px 14px;
+  background: rgba(30,30,58,0.9);
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.fs-btn:hover { background: rgba(42,42,74,0.9); color: #fff; }
+
+/* 全屏菜单 */
+#fs-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 220px;
+  height: 100vh;
+  background: rgba(18,18,42,0.97);
+  border-left: 1px solid #2a2a4a;
+  z-index: 999;
+  overflow-y: auto;
+  padding: 60px 0 20px;
+  backdrop-filter: blur(20px);
+}
+#fs-menu.show { display: block; }
+#fs-menu .nav-item { padding: 10px 16px; }
+
+/* ===== 右键菜单 ===== */
+#ctx-menu {
+  display: none;
+  position: fixed;
+  background: #1e1e3a;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  padding: 4px 0;
+  z-index: 9999;
+  min-width: 120px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.ctx-item {
+  padding: 7px 14px;
+  font-size: 12px;
+  color: #ccc;
+  cursor: pointer;
+}
+.ctx-item:hover { background: #2a2a4a; color: #fff; }
+.ctx-item.danger { color: #ff6b9d; }
+
+/* ===== 提交弹框 ===== */
+#submit-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+}
+#submit-modal.show { display: flex; }
+.submit-modal-box {
+  background: #1e1e3a;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 480px;
+  max-width: 90vw;
+}
+.submit-modal-box h3 {
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.submit-modal-box p {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.submit-modal-box textarea {
+  width: 100%;
+  height: 180px;
+  background: #12122a;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  padding: 10px;
+  resize: none;
+  outline: none;
+  margin-bottom: 12px;
+}
+.submit-modal-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.submit-modal-btns button {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #2a2a4a;
+}
+.btn-copy {
+  background: #2a2a4a;
+  color: #fff;
+}
+.btn-close-modal {
+  background: transparent;
+  color: #888;
+}
+
+/* ===== Toast ===== */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(30,30,58,0.95);
+  border: 1px solid #2a2a4a;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 12px;
+  color: #fff;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 9999;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== 缩放控件 ===== */
+#zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(18,18,42,0.9);
+  border: 1px solid #2a2a4a;
+  border-radius: 20px;
+  padding: 4px 8px;
+}
+.zoom-btn {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.zoom-btn:hover { color: #fff; background: #2a2a4a; }
+#zoom-label {
+  font-size: 11px;
+  color: #aaa;
+  min-width: 36px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- 侧边栏 -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    💕 心动挑战 · 线框
+    <span>PRD v2.0 · 可编辑线框图</span>
+  </div>
+
+  <div class="sidebar-group">用户视角</div>
+  <div class="nav-item active" id="nav-s1" onclick="switchPage('s1')">
+    <div class="nav-title">S1 语音房主界面</div>
+    <div class="nav-sub">基础场景 · 触发入口</div>
+  </div>
+  <div class="nav-item" id="nav-s2" onclick="switchPage('s2')">
+    <div class="nav-title">S2 开启弹窗</div>
+    <div class="nav-sub">破除萌新身份后触发</div>
+  </div>
+  <div class="nav-item" id="nav-s3" onclick="switchPage('s3')">
+    <div class="nav-title">S3 挑战详情页</div>
+    <div class="nav-sub">任务进度 · 简洁版</div>
+  </div>
+  <div class="nav-item" id="nav-s4" onclick="switchPage('s4')">
+    <div class="nav-title">S4 用户私信通知</div>
+    <div class="nav-sub">挑战开启时系统私信</div>
+  </div>
+
+  <div class="sidebar-group">主播视角</div>
+  <div class="nav-item" id="nav-s5" onclick="switchPage('s5')">
+    <div class="nav-title">S5 主播中心</div>
+    <div class="nav-sub">萌新用户 + 心动挑战 Tab</div>
+  </div>
+  <div class="nav-item" id="nav-s6" onclick="switchPage('s6')">
+    <div class="nav-title">S6 主播私信提醒</div>
+    <div class="nav-sub">周一~三系统提醒主播</div>
+  </div>
+  <div class="nav-item" id="nav-s7" onclick="switchPage('s7')">
+    <div class="nav-title">S7 主播与用户私聊</div>
+    <div class="nav-sub">主播视角 · 挑战进行中</div>
+  </div>
+
+  <div class="sidebar-notes">
+    <label>当前页备注</label>
+    <textarea id="notesArea" placeholder="在此添加备注说明…" oninput="saveNotes()"></textarea>
+  </div>
+</div>
+
+<!-- 主区域 -->
+<div id="main">
+  <!-- 工具栏 -->
+  <div id="toolbar">
+    <span class="toolbar-label">添加：</span>
+    <button class="tool-btn" onclick="addElement('rect')">▭ 矩形</button>
+    <button class="tool-btn" onclick="addElement('text')">T 文字</button>
+    <button class="tool-btn" onclick="addElement('image')">🖼 图片占位</button>
+    <button class="tool-btn" onclick="addElement('divider')">— 分割线</button>
+    <div class="toolbar-sep"></div>
+    <button class="tool-btn" onclick="undoAction()">↩ 撤销</button>
+    <button class="tool-btn" onclick="clearCanvas()">🗑 清空</button>
+    <button class="tool-btn" onclick="resetWireframe()">↺ 重置骨架</button>
+    <button class="tool-btn" id="grid-btn" onclick="toggleGrid()">⊞ 网格</button>
+    <button class="submit-btn" onclick="showSubmitModal()">✅ 提交给 Manus 精细化</button>
+  </div>
+
+  <!-- 画布区域 -->
+  <div id="canvas-area">
+    <div id="phone-wrapper">
+      <!-- 全屏按钮 -->
+      <div id="fullscreen-btn" onclick="toggleFullscreen()" title="全屏展示">⛶</div>
+
+      <!-- 手机框架 -->
+      <div id="phone-frame">
+        <div class="phone-notch"></div>
+        <!-- 线框画布 -->
+        <div id="wireframe-canvas" onclick="handleCanvasClick(event)" oncontextmenu="handleRightClick(event)"></div>
+      </div>
+    </div>
+
+    <!-- 缩放控件 -->
+    <div id="zoom-controls">
+      <button class="zoom-btn" onclick="changeZoom(-0.1)">−</button>
+      <span id="zoom-label">100%</span>
+      <button class="zoom-btn" onclick="changeZoom(0.1)">+</button>
+      <button class="zoom-btn" onclick="resetZoom()" title="重置缩放">⊙</button>
+    </div>
+  </div>
+</div>
+
+<!-- 全屏控制栏 -->
+<div id="fullscreen-controls">
+  <button class="fs-btn" onclick="toggleFsMenu()">☰ 页面</button>
+  <button class="fs-btn" onclick="toggleFullscreen()">✕ 退出全屏</button>
+</div>
+
+<!-- 全屏菜单 -->
+<div id="fs-menu">
+  <div class="sidebar-group">用户视角</div>
+  <div class="nav-item" onclick="switchPage('s1');toggleFsMenu()"><div class="nav-title">S1 语音房主界面</div></div>
+  <div class="nav-item" onclick="switchPage('s2');toggleFsMenu()"><div class="nav-title">S2 开启弹窗</div></div>
+  <div class="nav-item" onclick="switchPage('s3');toggleFsMenu()"><div class="nav-title">S3 挑战详情页</div></div>
+  <div class="nav-item" onclick="switchPage('s4');toggleFsMenu()"><div class="nav-title">S4 用户私信通知</div></div>
+  <div class="sidebar-group">主播视角</div>
+  <div class="nav-item" onclick="switchPage('s5');toggleFsMenu()"><div class="nav-title">S5 主播中心</div></div>
+  <div class="nav-item" onclick="switchPage('s6');toggleFsMenu()"><div class="nav-title">S6 主播私信提醒</div></div>
+  <div class="nav-item" onclick="switchPage('s7');toggleFsMenu()"><div class="nav-title">S7 主播与用户私聊</div></div>
+</div>
+
+<!-- 右键菜单 -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxDuplicate()">复制</div>
+  <div class="ctx-item" onclick="ctxBringFront()">置于顶层</div>
+  <div class="ctx-item" onclick="ctxSendBack()">置于底层</div>
+  <div class="ctx-item danger" onclick="ctxDelete()">删除</div>
+</div>
+
+<!-- 提交弹框 -->
+<div id="submit-modal">
+  <div class="submit-modal-box">
+    <h3>✅ 提交线框数据给 Manus</h3>
+    <p>复制下方 JSON 数据，粘贴给 Manus，并附上你的调整说明，Manus 将据此生成精细化原型图和更新 PRD。</p>
+    <textarea id="submit-json" readonly></textarea>
+    <div class="submit-modal-btns">
+      <button class="btn-copy" onclick="copyJson()">📋 复制 JSON</button>
+      <button class="btn-close-modal" onclick="closeSubmitModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ===== 线框骨架数据 =====
+const WIREFRAMES = {
+  s1: [
+    { id: 'bg', type: 'rect', label: '语音房背景\n（深色渐变）', x: 0, y: 0, w: 375, h: 812, style: 'header', fontSize: 11 },
+    { id: 'status', type: 'rect', label: '状态栏 22:04  信号/电量', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'room-title', type: 'rect', label: '房间名称  🔴直播中  人数', x: 80, y: 44, w: 215, h: 40, style: 'card', fontSize: 10 },
+    { id: 'close-btn', type: 'rect', label: '✕', x: 330, y: 50, w: 36, h: 28, style: 'button', fontSize: 12 },
+    { id: 'host-area', type: 'rect', label: '主播头像区\n（点击触发信息弹框）\n\n💗 心动挑战进行中', x: 87, y: 120, w: 200, h: 200, style: 'image', fontSize: 11 },
+    { id: 'seats', type: 'rect', label: '麦位区域（6个座位）', x: 20, y: 340, w: 335, h: 120, style: 'card', fontSize: 10 },
+    { id: 'chat', type: 'rect', label: '聊天消息流', x: 0, y: 480, w: 260, h: 200, style: 'card', fontSize: 10 },
+    { id: 'gift-bar', type: 'rect', label: '礼物栏', x: 260, y: 480, w: 115, h: 200, style: 'card', fontSize: 10 },
+    { id: 'bottom-bar', type: 'rect', label: '底部操作栏  💬 🎁 🎵 ···', x: 0, y: 700, w: 375, h: 56, style: 'nav', fontSize: 10 },
+    { id: 'demo-btn', type: 'rect', label: '▶ 模拟：用户破除萌新身份', x: 60, y: 760, w: 255, h: 36, style: 'button-primary', fontSize: 11 },
+  ],
+  s2: [
+    { id: 'overlay', type: 'rect', label: '半透明遮罩', x: 0, y: 0, w: 375, h: 812, style: 'header', fontSize: 10 },
+    { id: 'modal', type: 'rect', label: '弹框容器（居中）', x: 20, y: 180, w: 335, h: 460, style: 'card', fontSize: 10 },
+    { id: 'avatars', type: 'rect', label: '用户头像  💗  主播头像', x: 60, y: 200, w: 255, h: 80, style: 'image', fontSize: 11 },
+    { id: 'title', type: 'rect', label: '心动挑战开启！', x: 80, y: 295, w: 215, h: 36, style: 'header', fontSize: 14 },
+    { id: 'task-col', type: 'rect', label: '📅 完成条件\n参加 CPday\n每周四约会', x: 30, y: 345, w: 145, h: 110, style: 'card', fontSize: 10 },
+    { id: 'reward-col', type: 'rect', label: '🚗 完成奖励\n心动专属座驾\n有效期 7 天', x: 200, y: 345, w: 145, h: 110, style: 'button-primary', fontSize: 10 },
+    { id: 'timer', type: 'rect', label: '⏳ 挑战有效期 14 天', x: 80, y: 468, w: 215, h: 30, style: 'card', fontSize: 10 },
+    { id: 'btn-rule', type: 'rect', label: '查看详细规则', x: 30, y: 512, w: 145, h: 40, style: 'button', fontSize: 11 },
+    { id: 'btn-confirm', type: 'rect', label: '✅ 抢先确认', x: 200, y: 512, w: 145, h: 40, style: 'button-primary', fontSize: 11 },
+    { id: 'close', type: 'rect', label: '✕', x: 320, y: 185, w: 28, h: 28, style: 'button', fontSize: 12 },
+  ],
+  s3: [
+    { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'nav-bar', type: 'rect', label: '‹  心动挑战详情', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 12 },
+    { id: 'pair', type: 'rect', label: '用户头像  💗  主播头像\n心动挑战进行中', x: 60, y: 110, w: 255, h: 80, style: 'image', fontSize: 11 },
+    { id: 'countdown', type: 'rect', label: '⏳ 剩余 11 天', x: 120, y: 200, w: 135, h: 30, style: 'card', fontSize: 11 },
+    { id: 'reward-card', type: 'rect', label: '完成后获得\n🚗 心动专属座驾\n有效期 7 天 · 限定道具', x: 40, y: 245, w: 295, h: 80, style: 'button-primary', fontSize: 11 },
+    { id: 'summary', type: 'rect', label: '💡 下一个周四，送心动嘉宾（9钻）结成CP，\n再送99钻礼物点亮约会，座驾自动到账！', x: 20, y: 340, w: 335, h: 56, style: 'card', fontSize: 10 },
+    { id: 'cpday-intro', type: 'rect', label: '📅 CPday 介绍\n每周四 0:00-23:59\n距下一个 CPday 还有 x 天', x: 20, y: 412, w: 335, h: 80, style: 'card', fontSize: 10 },
+    { id: 'step1', type: 'rect', label: 'Step 1  送心动嘉宾（9钻）结成CP', x: 20, y: 508, w: 335, h: 60, style: 'card', fontSize: 10 },
+    { id: 'step2', type: 'rect', label: 'Step 2  再送 ≥99 钻礼物点亮第一场约会', x: 20, y: 580, w: 335, h: 60, style: 'card', fontSize: 10 },
+    { id: 'rules', type: 'rect', label: '活动规则（5条）', x: 20, y: 656, w: 335, h: 100, style: 'card', fontSize: 10 },
+    { id: 'bottom', type: 'rect', label: '底部安全区', x: 0, y: 780, w: 375, h: 32, style: 'nav', fontSize: 9 },
+  ],
+  s4: [
+    { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'nav-bar', type: 'rect', label: '‹  私信', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 12 },
+    { id: 'msg-list', type: 'rect', label: '私信列表\n（其他对话…）', x: 0, y: 92, w: 375, h: 200, style: 'card', fontSize: 10 },
+    { id: 'pico-msg', type: 'rect', label: '🔔 Pico 心动提醒\n心动挑战已开启！点击查看任务详情', x: 0, y: 292, w: 375, h: 64, style: 'button-primary', fontSize: 11 },
+    { id: 'msg-detail', type: 'rect', label: '私信详情弹窗\n\n💗 心动挑战已开启！\n任务：参加下一次 CPday\n奖励：心动专属座驾\n\n[查看挑战详情 ›]', x: 20, y: 380, w: 335, h: 200, style: 'card', fontSize: 10 },
+  ],
+  s5: [
+    { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'nav-bar', type: 'rect', label: '‹  主播中心', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 12 },
+    { id: 'profile', type: 'rect', label: '主播头像  阿丽丽  号码正常\n已连续开播32天  月亮币可提现', x: 0, y: 92, w: 375, h: 80, style: 'card', fontSize: 10 },
+    { id: 'stats', type: 'rect', label: '数据概览（收益/曝光/关系等）', x: 0, y: 172, w: 375, h: 120, style: 'card', fontSize: 10 },
+    { id: 'tabs', type: 'rect', label: '数据  |  老板  |  萌新用户  |  心动挑战  |  活动', x: 0, y: 292, w: 375, h: 44, style: 'tab', fontSize: 10 },
+    { id: 'tab-tip', type: 'rect', label: '转化萌新用户并完成CPday约会，可获200钻/人  查看详情', x: 0, y: 336, w: 375, h: 40, style: 'button-primary', fontSize: 10 },
+    { id: 'pending-title', type: 'rect', label: '待完成 CPday（2人）', x: 0, y: 376, w: 375, h: 32, style: 'header', fontSize: 11 },
+    { id: 'user1', type: 'rect', label: '小月光儿  剩余11天  [进行中]', x: 0, y: 408, w: 375, h: 56, style: 'card', fontSize: 10 },
+    { id: 'user2', type: 'rect', label: '星空漫步者  剩余5天  [进行中]', x: 0, y: 464, w: 375, h: 56, style: 'card', fontSize: 10 },
+    { id: 'done-title', type: 'rect', label: '已完成（1人）', x: 0, y: 520, w: 375, h: 32, style: 'header', fontSize: 11 },
+    { id: 'user3', type: 'rect', label: '甜甜圈  已完成 CPday  [已完成]', x: 0, y: 552, w: 375, h: 56, style: 'card', fontSize: 10 },
+  ],
+  s6: [
+    { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'nav-bar', type: 'rect', label: '‹  私信', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 12 },
+    { id: 'msg-list', type: 'rect', label: '私信列表（其他对话…）', x: 0, y: 92, w: 375, h: 180, style: 'card', fontSize: 10 },
+    { id: 'pico-msg', type: 'rect', label: '🔔 Pico 心动提醒（周一~三）\n你有2位用户待完成CPday心动挑战，点击查看', x: 0, y: 272, w: 375, h: 64, style: 'button-primary', fontSize: 11 },
+    { id: 'msg-detail', type: 'rect', label: '私信详情\n\n💗 周四 CPday 即将开启！\n你有 2 位用户待完成心动挑战\n\n[前往主播中心查看 ›]', x: 20, y: 360, w: 335, h: 180, style: 'card', fontSize: 10 },
+  ],
+  s7: [
+    { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
+    { id: 'nav-bar', type: 'rect', label: '‹  小月光儿  💗 心动挑战进行中 · 剩余11天', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 10 },
+    { id: 'chat-history', type: 'rect', label: '聊天记录\n（历史消息…）', x: 0, y: 92, w: 375, h: 200, style: 'card', fontSize: 10 },
+    { id: 'challenge-card', type: 'rect', label: '💗 心动挑战进行中\n任务：参加 CPday 完成约会\n奖励：200钻石\n进度：待完成 CPday', x: 20, y: 310, w: 335, h: 130, style: 'button-primary', fontSize: 10 },
+    { id: 'btn-detail', type: 'rect', label: '查看挑战详情', x: 30, y: 456, w: 145, h: 40, style: 'button', fontSize: 11 },
+    { id: 'btn-back', type: 'rect', label: '返回主播中心', x: 200, y: 456, w: 145, h: 40, style: 'button', fontSize: 11 },
+    { id: 'input-bar', type: 'rect', label: '输入框  发送', x: 0, y: 756, w: 375, h: 56, style: 'nav', fontSize: 10 },
+  ],
+};
+
+// ===== 状态管理 =====
+let currentPage = 's1';
+let pageStates = {};
+let pageNotes = {};
+let selectedEl = null;
+let historyStack = {};
+let zoomLevel = 1;
+let gridVisible = false;
+let elementCounter = 0;
+
+// 拖拽状态
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let dragElStartX = 0;
+let dragElStartY = 0;
+
+// 调整大小状态
+let isResizing = false;
+let resizeHandle = '';
+let resizeStartX = 0;
+let resizeStartY = 0;
+let resizeElStartW = 0;
+let resizeElStartH = 0;
+let resizeElStartX = 0;
+let resizeElStartY = 0;
+
+// ===== 页面切换 =====
+function switchPage(pageId) {
+  // 保存当前页状态
+  if (currentPage) {
+    pageStates[currentPage] = serializeCanvas();
+    pageNotes[currentPage] = document.getElementById('notesArea').value;
+  }
+
+  currentPage = pageId;
+
+  // 更新侧边栏高亮
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + pageId);
+  if (navEl) navEl.classList.add('active');
+
+  // 恢复或初始化状态
+  if (pageStates[pageId]) {
+    deserializeCanvas(pageStates[pageId]);
+  } else {
+    renderWireframe(pageId);
+  }
+
+  // 恢复备注
+  document.getElementById('notesArea').value = pageNotes[pageId] || '';
+
+  // 清除选中
+  deselectAll();
+}
+
+// ===== 渲染线框骨架 =====
+function renderWireframe(pageId) {
+  const canvas = document.getElementById('wireframe-canvas');
+  canvas.innerHTML = '';
+  elementCounter = 0;
+
+  const items = WIREFRAMES[pageId] || [];
+  items.forEach(item => {
+    createElement(item);
+  });
+
+  saveHistory();
+}
+
+// ===== 创建元素 =====
+function createElement(config) {
+  const canvas = document.getElementById('wireframe-canvas');
+  const el = document.createElement('div');
+  el.className = 'wf-element wf-rect style-' + (config.style || 'card');
+  el.style.left = config.x + 'px';
+  el.style.top = config.y + 'px';
+  el.style.width = config.w + 'px';
+  el.style.height = config.h + 'px';
+  el.dataset.id = config.id || ('el-' + (++elementCounter));
+  el.dataset.style = config.style || 'card';
+
+  // 标签
+  const label = document.createElement('div');
+  label.className = 'wf-label';
+  label.style.fontSize = (config.fontSize || 11) + 'px';
+  label.textContent = config.label || '';
+  label.setAttribute('contenteditable', 'false');
+  el.appendChild(label);
+
+  // 调整大小手柄
+  if (config.style !== 'divider') {
+    ['se', 's', 'e'].forEach(dir => {
+      const handle = document.createElement('div');
+      handle.className = 'resize-handle ' + dir;
+      handle.dataset.dir = dir;
+      el.appendChild(handle);
+    });
+  }
+
+  // 绑定事件
+  el.addEventListener('mousedown', onElementMouseDown);
+
+  // 双击编辑文字
+  label.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    label.setAttribute('contenteditable', 'true');
+    label.classList.add('editable-active');
+    label.focus();
+    // 选中所有文字
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+
+  label.addEventListener('blur', () => {
+    label.setAttribute('contenteditable', 'false');
+    label.classList.remove('editable-active');
+    saveHistory();
+  });
+
+  label.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      label.blur();
+    }
+    e.stopPropagation();
+  });
+
+  canvas.appendChild(el);
+  return el;
+}
+
+// ===== 鼠标按下（拖拽/调整大小） =====
+function onElementMouseDown(e) {
+  if (e.button === 2) return; // 右键交给右键菜单
+
+  const el = e.currentTarget;
+  const label = el.querySelector('.wf-label');
+
+  // 如果点击的是调整大小手柄
+  if (e.target.classList.contains('resize-handle')) {
+    e.preventDefault();
+    e.stopPropagation();
+    selectElement(el);
+    isResizing = true;
+    resizeHandle = e.target.dataset.dir;
+    resizeStartX = e.clientX;
+    resizeStartY = e.clientY;
+    resizeElStartW = parseInt(el.style.width);
+    resizeElStartH = parseInt(el.style.height);
+    resizeElStartX = parseInt(el.style.left);
+    resizeElStartY = parseInt(el.style.top);
+    return;
+  }
+
+  // 如果标签正在编辑，不触发拖拽
+  if (label && label.getAttribute('contenteditable') === 'true') return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  selectElement(el);
+
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  dragElStartX = parseInt(el.style.left);
+  dragElStartY = parseInt(el.style.top);
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
+
+function onMouseMove(e) {
+  if (isDragging && selectedEl) {
+    const dx = (e.clientX - dragStartX) / zoomLevel;
+    const dy = (e.clientY - dragStartY) / zoomLevel;
+    let newX = dragElStartX + dx;
+    let newY = dragElStartY + dy;
+
+    if (gridVisible) {
+      newX = Math.round(newX / 8) * 8;
+      newY = Math.round(newY / 8) * 8;
+    }
+
+    selectedEl.style.left = newX + 'px';
+    selectedEl.style.top = newY + 'px';
+  }
+
+  if (isResizing && selectedEl) {
+    const dx = (e.clientX - resizeStartX) / zoomLevel;
+    const dy = (e.clientY - resizeStartY) / zoomLevel;
+
+    if (resizeHandle === 'se' || resizeHandle === 'e') {
+      selectedEl.style.width = Math.max(40, resizeElStartW + dx) + 'px';
+    }
+    if (resizeHandle === 'se' || resizeHandle === 's') {
+      selectedEl.style.height = Math.max(20, resizeElStartH + dy) + 'px';
+    }
+  }
+}
+
+function onMouseUp() {
+  if (isDragging || isResizing) {
+    saveHistory();
+  }
+  isDragging = false;
+  isResizing = false;
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
+}
+
+// ===== 选中/取消选中 =====
+function selectElement(el) {
+  deselectAll();
+  selectedEl = el;
+  el.classList.add('selected');
+}
+
+function deselectAll() {
+  document.querySelectorAll('.wf-element.selected').forEach(el => el.classList.remove('selected'));
+  selectedEl = null;
+}
+
+function handleCanvasClick(e) {
+  if (e.target === document.getElementById('wireframe-canvas')) {
+    deselectAll();
+  }
+}
+
+// ===== 添加新元素 =====
+function addElement(type) {
+  const configs = {
+    rect: { label: '新模块', x: 40, y: 200, w: 295, h: 60, style: 'card', fontSize: 11 },
+    text: { label: '文字说明', x: 40, y: 200, w: 295, h: 36, style: 'header', fontSize: 12 },
+    image: { label: '🖼 图片占位\n（点击替换）', x: 40, y: 200, w: 295, h: 120, style: 'image', fontSize: 11 },
+    divider: { label: '', x: 0, y: 200, w: 375, h: 1, style: 'divider', fontSize: 10 },
+  };
+  const config = configs[type] || configs.rect;
+  config.id = 'new-' + Date.now();
+  const el = createElement(config);
+  selectElement(el);
+  saveHistory();
+  showToast('已添加' + (type === 'rect' ? '矩形' : type === 'text' ? '文字' : type === 'image' ? '图片占位' : '分割线'));
+}
+
+// ===== 撤销 =====
+function saveHistory() {
+  if (!historyStack[currentPage]) historyStack[currentPage] = [];
+  historyStack[currentPage].push(serializeCanvas());
+  if (historyStack[currentPage].length > 30) historyStack[currentPage].shift();
+}
+
+function undoAction() {
+  if (!historyStack[currentPage] || historyStack[currentPage].length < 2) {
+    showToast('没有更多可撤销的操作');
+    return;
+  }
+  historyStack[currentPage].pop();
+  const prev = historyStack[currentPage][historyStack[currentPage].length - 1];
+  deserializeCanvas(prev);
+  showToast('已撤销');
+}
+
+// ===== 序列化/反序列化 =====
+function serializeCanvas() {
+  const elements = [];
+  document.querySelectorAll('#wireframe-canvas .wf-element').forEach(el => {
+    const label = el.querySelector('.wf-label');
+    elements.push({
+      id: el.dataset.id,
+      style: el.dataset.style,
+      x: parseInt(el.style.left),
+      y: parseInt(el.style.top),
+      w: parseInt(el.style.width),
+      h: parseInt(el.style.height),
+      label: label ? label.textContent : '',
+      fontSize: label ? parseInt(label.style.fontSize) || 11 : 11,
+    });
+  });
+  return elements;
+}
+
+function deserializeCanvas(elements) {
+  const canvas = document.getElementById('wireframe-canvas');
+  canvas.innerHTML = '';
+  elements.forEach(item => {
+    createElement({ ...item, type: 'rect' });
+  });
+}
+
+// ===== 清空/重置 =====
+function clearCanvas() {
+  if (!confirm('确定清空当前页面的所有元素？')) return;
+  document.getElementById('wireframe-canvas').innerHTML = '';
+  saveHistory();
+  showToast('已清空');
+}
+
+function resetWireframe() {
+  if (!confirm('确定重置为初始骨架？当前修改将丢失。')) return;
+  delete pageStates[currentPage];
+  renderWireframe(currentPage);
+  showToast('已重置骨架');
+}
+
+// ===== 网格 =====
+function toggleGrid() {
+  gridVisible = !gridVisible;
+  const btn = document.getElementById('grid-btn');
+  const canvas = document.getElementById('wireframe-canvas');
+  if (gridVisible) {
+    btn.classList.add('active');
+    canvas.style.backgroundImage = 'linear-gradient(rgba(255,107,157,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,157,0.1) 1px, transparent 1px)';
+    canvas.style.backgroundSize = '8px 8px';
+  } else {
+    btn.classList.remove('active');
+    canvas.style.backgroundImage = 'none';
+  }
+}
+
+// ===== 备注 =====
+function saveNotes() {
+  pageNotes[currentPage] = document.getElementById('notesArea').value;
+}
+
+// ===== 缩放 =====
+function changeZoom(delta) {
+  zoomLevel = Math.max(0.3, Math.min(2, zoomLevel + delta));
+  applyZoom();
+}
+
+function resetZoom() {
+  zoomLevel = 1;
+  applyZoom();
+}
+
+function applyZoom() {
+  const wrapper = document.getElementById('phone-wrapper');
+  wrapper.style.transform = `scale(${zoomLevel})`;
+  wrapper.style.transformOrigin = 'top center';
+  document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+}
+
+// ===== 全屏 =====
+function toggleFullscreen() {
+  document.body.classList.toggle('fullscreen');
+  if (document.body.classList.contains('fullscreen')) {
+    document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+    document.getElementById('fs-menu').classList.remove('show');
+  }
+}
+
+function toggleFsMenu() {
+  document.getElementById('fs-menu').classList.toggle('show');
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    document.body.classList.remove('fullscreen');
+  }
+});
+
+// ===== 右键菜单 =====
+function handleRightClick(e) {
+  e.preventDefault();
+  const el = e.target.closest('.wf-element');
+  if (el) {
+    selectElement(el);
+    const menu = document.getElementById('ctx-menu');
+    menu.style.display = 'block';
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+  }
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('ctx-menu').style.display = 'none';
+});
+
+function ctxDuplicate() {
+  if (!selectedEl) return;
+  const label = selectedEl.querySelector('.wf-label');
+  const config = {
+    id: 'dup-' + Date.now(),
+    style: selectedEl.dataset.style,
+    x: parseInt(selectedEl.style.left) + 16,
+    y: parseInt(selectedEl.style.top) + 16,
+    w: parseInt(selectedEl.style.width),
+    h: parseInt(selectedEl.style.height),
+    label: label ? label.textContent : '',
+    fontSize: label ? parseInt(label.style.fontSize) || 11 : 11,
+    type: 'rect',
+  };
+  const newEl = createElement(config);
+  selectElement(newEl);
+  saveHistory();
+  showToast('已复制');
+}
+
+function ctxBringFront() {
+  if (!selectedEl) return;
+  document.getElementById('wireframe-canvas').appendChild(selectedEl);
+  showToast('已置顶');
+}
+
+function ctxSendBack() {
+  if (!selectedEl) return;
+  const canvas = document.getElementById('wireframe-canvas');
+  canvas.insertBefore(selectedEl, canvas.firstChild);
+  showToast('已置底');
+}
+
+function ctxDelete() {
+  if (!selectedEl) return;
+  selectedEl.remove();
+  selectedEl = null;
+  saveHistory();
+  showToast('已删除');
+}
+
+// Delete 键删除
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEl) {
+    const label = selectedEl.querySelector('.wf-label');
+    if (label && label.getAttribute('contenteditable') === 'true') return;
+    selectedEl.remove();
+    selectedEl = null;
+    saveHistory();
+  }
+});
+
+// ===== 提交弹框 =====
+function showSubmitModal() {
+  // 保存当前页状态
+  pageStates[currentPage] = serializeCanvas();
+  pageNotes[currentPage] = document.getElementById('notesArea').value;
+
+  const exportData = {
+    version: '2.0',
+    exportTime: new Date().toISOString(),
+    pages: {}
+  };
+
+  // 导出所有页面
+  Object.keys(WIREFRAMES).forEach(pageId => {
+    exportData.pages[pageId] = {
+      elements: pageStates[pageId] || WIREFRAMES[pageId].map(item => ({
+        id: item.id,
+        style: item.style,
+        x: item.x,
+        y: item.y,
+        w: item.w,
+        h: item.h,
+        label: item.label,
+        fontSize: item.fontSize || 11,
+      })),
+      notes: pageNotes[pageId] || '',
+    };
+  });
+
+  document.getElementById('submit-json').value = JSON.stringify(exportData, null, 2);
+  document.getElementById('submit-modal').classList.add('show');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submit-modal').classList.remove('show');
+}
+
+function copyJson() {
+  const textarea = document.getElementById('submit-json');
+  textarea.select();
+  document.execCommand('copy');
+  showToast('✅ JSON 已复制到剪贴板！粘贴给 Manus 即可');
+}
+
+// ===== Toast =====
+function showToast(msg, duration = 2000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// ===== 初始化 =====
+document.addEventListener('DOMContentLoaded', () => {
+  switchPage('s1');
+});
+</script>
+</body>
+</html>
