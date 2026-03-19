@@ -797,13 +797,38 @@ const WIREFRAMES = {
     { id: 'nav-bar', type: 'rect', label: '‹  主播中心', x: 0, y: 44, w: 375, h: 48, style: 'nav', fontSize: 12 },
     { id: 'profile', type: 'rect', label: '主播头像  阿丽丽  号码正常\n已连续开播32天  月亮币可提现', x: 0, y: 92, w: 375, h: 80, style: 'card', fontSize: 10 },
     { id: 'stats', type: 'rect', label: '数据概览（收益/曝光/关系等）', x: 0, y: 172, w: 375, h: 120, style: 'card', fontSize: 10 },
-    { id: 'tabs', type: 'rect', label: '数据  |  老板  |  萌新用户  |  心动挑战  |  活动', x: 0, y: 292, w: 375, h: 44, style: 'tab', fontSize: 10 },
-    { id: 'tab-tip', type: 'rect', label: '转化萌新用户并完成CPday约会，可获200钻/人  查看详情', x: 0, y: 336, w: 375, h: 40, style: 'button-primary', fontSize: 10 },
+
+    // Tab 栏背景
+    { id: 'tab-bg', type: 'rect', label: '', x: 0, y: 292, w: 375, h: 44, style: 'tab', fontSize: 10 },
+    // Tab 条目：每个独立元素，心动挑战为选中态
+    { id: 'tab-data',      type: 'rect', label: '数据',     x: 0,   y: 292, w: 60,  h: 44, style: 'tab',    fontSize: 10 },
+    { id: 'tab-boss',      type: 'rect', label: '老板',     x: 60,  y: 292, w: 60,  h: 44, style: 'tab',    fontSize: 10 },
+    { id: 'tab-newbie',    type: 'rect', label: '萌新用户', x: 120, y: 292, w: 75,  h: 44, style: 'tab',    fontSize: 10 },
+    { id: 'tab-challenge', type: 'rect', label: '❤️ 心动挑战', x: 195, y: 292, w: 90,  h: 44, style: 'button-primary', fontSize: 10 },
+    { id: 'tab-activity',  type: 'rect', label: '活动',     x: 285, y: 292, w: 90,  h: 44, style: 'tab',    fontSize: 10 },
+
+    // 心动挑战 Tab 内容
+    { id: 'tab-tip', type: 'rect', label: '转化萌新用户并完成CPday约会，可获200钒/人  查看详情 ›', x: 0, y: 336, w: 375, h: 40, style: 'button-primary', fontSize: 10 },
+
+    // 分组标题：待完成
     { id: 'pending-title', type: 'rect', label: '待完成 CPday（2人）', x: 0, y: 376, w: 375, h: 32, style: 'header', fontSize: 11 },
-    { id: 'user1', type: 'rect', label: '小月光儿  剩余11天  [进行中]', x: 0, y: 408, w: 375, h: 56, style: 'card', fontSize: 10 },
-    { id: 'user2', type: 'rect', label: '星空漫步者  剩余5天  [进行中]', x: 0, y: 464, w: 375, h: 56, style: 'card', fontSize: 10 },
-    { id: 'done-title', type: 'rect', label: '已完成（1人）', x: 0, y: 520, w: 375, h: 32, style: 'header', fontSize: 11 },
-    { id: 'user3', type: 'rect', label: '甜甜圈  已完成 CPday  [已完成]', x: 0, y: 552, w: 375, h: 56, style: 'card', fontSize: 10 },
+    // 用户卡片：头像 + 姓名 + 剩余天数 + 状态标签
+    { id: 'user1-avatar',  type: 'rect', label: '头像', x: 12,  y: 408, w: 40, h: 40, style: 'image',  fontSize: 9 },
+    { id: 'user1-info',    type: 'rect', label: '小月光儿\n心动挑战 · 剩余11天', x: 60, y: 408, w: 200, h: 40, style: 'card', fontSize: 10 },
+    { id: 'user1-status',  type: 'rect', label: '进行中', x: 268, y: 416, w: 60, h: 24, style: 'button', fontSize: 10 },
+    { id: 'user1-divider', type: 'rect', label: '', x: 0, y: 448, w: 375, h: 1, style: 'divider', fontSize: 9 },
+
+    { id: 'user2-avatar',  type: 'rect', label: '头像', x: 12,  y: 456, w: 40, h: 40, style: 'image',  fontSize: 9 },
+    { id: 'user2-info',    type: 'rect', label: '星空漫步者\n心动挑战 · 剩余5天！尽快完成', x: 60, y: 456, w: 200, h: 40, style: 'card', fontSize: 10 },
+    { id: 'user2-status',  type: 'rect', label: '尽快完成', x: 268, y: 464, w: 60, h: 24, style: 'button-primary', fontSize: 9 },
+    { id: 'user2-divider', type: 'rect', label: '', x: 0, y: 496, w: 375, h: 1, style: 'divider', fontSize: 9 },
+
+    // 分组标题：已完成
+    { id: 'done-title', type: 'rect', label: '已完成（1人）', x: 0, y: 504, w: 375, h: 32, style: 'header', fontSize: 11 },
+    { id: 'user3-avatar',  type: 'rect', label: '头像', x: 12,  y: 536, w: 40, h: 40, style: 'image',  fontSize: 9 },
+    { id: 'user3-info',    type: 'rect', label: '甜甜圈\n已完成 CPday 约会！', x: 60, y: 536, w: 200, h: 40, style: 'card', fontSize: 10 },
+    { id: 'user3-status',  type: 'rect', label: '已完成', x: 268, y: 544, w: 60, h: 24, style: 'button', fontSize: 10 },
+    { id: 'user3-divider', type: 'rect', label: '', x: 0, y: 576, w: 375, h: 1, style: 'divider', fontSize: 9 },
   ],
   s6: [
     { id: 'status', type: 'rect', label: '状态栏', x: 0, y: 0, w: 375, h: 44, style: 'nav', fontSize: 9 },
